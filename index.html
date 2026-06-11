@@ -21,7 +21,6 @@
 
     .container { width: 100%; max-width: 500px; }
 
-    /* Header */
     .header {
       background: #1c1c1e;
       border-radius: 20px;
@@ -50,10 +49,7 @@
       line-height: 1.5;
     }
 
-    .stats {
-      display: flex;
-      gap: 12px;
-    }
+    .stats { display: flex; gap: 12px; }
 
     .stat {
       flex: 1;
@@ -69,14 +65,9 @@
       margin-bottom: 4px;
     }
 
-    .stat .label {
-      font-size: 0.72rem;
-      color: #888;
-    }
-
+    .stat .label { font-size: 0.72rem; color: #888; }
     .stat.accent .num { color: #a78bfa; }
 
-    /* Input card */
     .input-card {
       background: white;
       border-radius: 20px;
@@ -123,11 +114,9 @@
     }
 
     .add-btn:hover { background: #3a3a3c; transform: scale(1.05); }
+    .add-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 
-    .meta-row {
-      display: flex;
-      gap: 8px;
-    }
+    .meta-row { display: flex; gap: 8px; }
 
     .meta-row select,
     .meta-row input[type="date"] {
@@ -147,7 +136,6 @@
     .meta-row select:focus,
     .meta-row input[type="date"]:focus { border-color: #a78bfa; }
 
-    /* Filters */
     .filters {
       display: flex;
       background: white;
@@ -176,7 +164,6 @@
       color: white;
     }
 
-    /* List */
     .todo-list {
       display: flex;
       flex-direction: column;
@@ -202,7 +189,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Checkbox */
     .check-wrap input[type="checkbox"] {
       appearance: none;
       width: 20px;
@@ -250,11 +236,7 @@
       color: #c7c7c7;
     }
 
-    .item-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .item-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 
     .tag {
       font-size: 0.72rem;
@@ -266,7 +248,6 @@
     .tag-high   { background: #fce7e7; color: #e03131; }
     .tag-medium { background: #fff4e0; color: #e67700; }
     .tag-low    { background: #e6f7ee; color: #2f9e44; }
-
     .tag-deadline { background: #ede9fe; color: #7c3aed; }
     .tag-overdue  { background: #fce7e7; color: #e03131; }
     .tag-today    { background: #fff4e0; color: #e67700; }
@@ -287,6 +268,13 @@
     .empty {
       text-align: center;
       color: #ccc;
+      font-size: 0.85rem;
+      padding: 48px 0;
+    }
+
+    .loading {
+      text-align: center;
+      color: #bbb;
       font-size: 0.85rem;
       padding: 48px 0;
     }
@@ -320,15 +308,15 @@
       </div>
       <div class="stats">
         <div class="stat accent">
-          <div class="num" id="statRemaining">0</div>
+          <div class="num" id="statRemaining">—</div>
           <div class="label">残りタスク</div>
         </div>
         <div class="stat">
-          <div class="num" id="statDone">0</div>
+          <div class="num" id="statDone">—</div>
           <div class="label">完了済み</div>
         </div>
         <div class="stat">
-          <div class="num" id="statOverdue">0</div>
+          <div class="num" id="statOverdue">—</div>
           <div class="label">期限切れ</div>
         </div>
       </div>
@@ -337,7 +325,7 @@
     <div class="input-card">
       <div class="input-row">
         <input id="newTask" type="text" placeholder="新しいタスクを追加..." />
-        <button class="add-btn" onclick="addTask()">＋</button>
+        <button class="add-btn" id="addBtn" onclick="addTask()">＋</button>
       </div>
       <div class="meta-row">
         <select id="newPriority">
@@ -355,7 +343,7 @@
       <button onclick="setFilter('done', this)">完了済み</button>
     </div>
 
-    <div class="todo-list" id="todoList"></div>
+    <div class="todo-list" id="todoList"><div class="loading">読み込み中...</div></div>
 
     <div class="footer">
       <button onclick="clearDone()">完了済みを削除</button>
@@ -364,10 +352,67 @@
   </div>
 
   <script>
-    let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    const SUPABASE_URL = 'https://cfbljcqrxdfwdbibyzsn.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmYmxqY3FyeGRmd2RiaWJ5enNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjM0ODYsImV4cCI6MjA5NjY5OTQ4Nn0.lRglflRjxfiFApOPPAhlo3nacElwfQWU6SXtH5JIv00';
+
+    const headers = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    };
+
+    let tasks = [];
     let filter = 'all';
 
-    function save() { localStorage.setItem('tasks', JSON.stringify(tasks)); }
+    async function fetchTasks() {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/todos?order=created_at.desc`, { headers });
+      tasks = await res.json();
+      render();
+    }
+
+    async function addTask() {
+      const input = document.getElementById('newTask');
+      const text = input.value.trim();
+      if (!text) return;
+      const btn = document.getElementById('addBtn');
+      btn.disabled = true;
+      const body = JSON.stringify({
+        text,
+        done: false,
+        priority: document.getElementById('newPriority').value,
+        deadline: document.getElementById('newDeadline').value || null,
+      });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/todos`, { method: 'POST', headers, body });
+      const [newTask] = await res.json();
+      tasks.unshift(newTask);
+      input.value = '';
+      document.getElementById('newDeadline').value = '';
+      btn.disabled = false;
+      render();
+    }
+
+    async function toggle(id, done) {
+      await fetch(`${SUPABASE_URL}/rest/v1/todos?id=eq.${id}`, {
+        method: 'PATCH', headers,
+        body: JSON.stringify({ done: !done })
+      });
+      const t = tasks.find(t => t.id === id);
+      if (t) t.done = !done;
+      render();
+    }
+
+    async function remove(id) {
+      await fetch(`${SUPABASE_URL}/rest/v1/todos?id=eq.${id}`, { method: 'DELETE', headers });
+      tasks = tasks.filter(t => t.id !== id);
+      render();
+    }
+
+    async function clearDone() {
+      await fetch(`${SUPABASE_URL}/rest/v1/todos?done=eq.true`, { method: 'DELETE', headers });
+      tasks = tasks.filter(t => !t.done);
+      render();
+    }
 
     function todayStr() { return new Date().toISOString().slice(0, 10); }
 
@@ -393,70 +438,34 @@
 
     function render() {
       const list = document.getElementById('todoList');
-      const t = todayStr();
-      const filtered = tasks.filter(task =>
-        filter === 'all'    ? true :
-        filter === 'active' ? !task.done : task.done
+      const filtered = tasks.filter(t =>
+        filter === 'all' ? true : filter === 'active' ? !t.done : t.done
       );
 
       if (filtered.length === 0) {
         list.innerHTML = '<div class="empty">タスクがありません</div>';
       } else {
-        list.innerHTML = filtered.map(task => `
-          <div class="todo-item ${task.done ? 'done' : ''}">
+        list.innerHTML = filtered.map(t => `
+          <div class="todo-item ${t.done ? 'done' : ''}">
             <div class="check-wrap">
-              <input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggle(${task.id})">
+              <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle(${t.id}, ${t.done})">
             </div>
             <div class="item-body">
-              <div class="item-text">${escHtml(task.text)}</div>
+              <div class="item-text">${escHtml(t.text)}</div>
               <div class="item-tags">
-                ${priorityTag(task.priority || 'medium')}
-                ${deadlineTag(task.deadline)}
+                ${priorityTag(t.priority || 'medium')}
+                ${deadlineTag(t.deadline)}
               </div>
             </div>
-            <button class="delete-btn" onclick="remove(${task.id})">✕</button>
+            <button class="delete-btn" onclick="remove(${t.id})">✕</button>
           </div>
         `).join('');
       }
 
-      const remaining = tasks.filter(t => !t.done).length;
-      const done      = tasks.filter(t => t.done).length;
-      const overdue   = tasks.filter(t => !t.done && t.deadline && t.deadline < todayStr()).length;
-      document.getElementById('statRemaining').textContent = remaining;
-      document.getElementById('statDone').textContent      = done;
-      document.getElementById('statOverdue').textContent   = overdue;
-    }
-
-    function addTask() {
-      const input = document.getElementById('newTask');
-      const text = input.value.trim();
-      if (!text) return;
-      tasks.unshift({
-        id: Date.now(),
-        text,
-        done: false,
-        priority: document.getElementById('newPriority').value,
-        deadline: document.getElementById('newDeadline').value || null,
-      });
-      input.value = '';
-      document.getElementById('newDeadline').value = '';
-      save(); render();
-    }
-
-    function toggle(id) {
-      const t = tasks.find(t => t.id === id);
-      if (t) t.done = !t.done;
-      save(); render();
-    }
-
-    function remove(id) {
-      tasks = tasks.filter(t => t.id !== id);
-      save(); render();
-    }
-
-    function clearDone() {
-      tasks = tasks.filter(t => !t.done);
-      save(); render();
+      const t = todayStr();
+      document.getElementById('statRemaining').textContent = tasks.filter(t => !t.done).length;
+      document.getElementById('statDone').textContent      = tasks.filter(t => t.done).length;
+      document.getElementById('statOverdue').textContent   = tasks.filter(t => !t.done && t.deadline && t.deadline < todayStr()).length;
     }
 
     function setFilter(f, btn) {
@@ -479,7 +488,7 @@
     document.getElementById('dateLabel').innerHTML =
       `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日<br>${days[now.getDay()]}曜日`;
 
-    render();
+    fetchTasks();
   </script>
 </body>
 </html>
