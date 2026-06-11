@@ -31,6 +31,11 @@
       margin-top: 40px;
     }
 
+    .auth-logo {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
     .auth-screen h2 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -42,14 +47,15 @@
       font-size: 0.85rem;
       color: #999;
       margin-bottom: 28px;
+      line-height: 1.6;
     }
 
     .auth-input {
       width: 100%;
       border: 1.5px solid #ececec;
       border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 0.9rem;
+      padding: 13px 14px;
+      font-size: 0.92rem;
       font-family: inherit;
       color: #1c1c1e;
       outline: none;
@@ -77,29 +83,13 @@
     .auth-btn:hover { background: #3a3a3c; }
     .auth-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-    .auth-toggle {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 0.82rem;
-      color: #999;
-    }
-
-    .auth-toggle button {
-      background: none;
-      border: none;
-      color: #7c3aed;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 500;
-    }
-
     .auth-msg {
-      font-size: 0.82rem;
-      padding: 10px 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
+      font-size: 0.84rem;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 14px;
       display: none;
+      line-height: 1.5;
     }
 
     .auth-msg.error   { background: #fce7e7; color: #e03131; display: block; }
@@ -136,12 +126,7 @@
       gap: 6px;
     }
 
-    .date {
-      font-size: 0.78rem;
-      color: #888;
-      text-align: right;
-      line-height: 1.5;
-    }
+    .date { font-size: 0.78rem; color: #888; text-align: right; line-height: 1.5; }
 
     .logout-btn {
       background: #2c2c2e;
@@ -166,13 +151,7 @@
       padding: 12px 14px;
     }
 
-    .stat .num {
-      font-size: 1.4rem;
-      font-weight: 600;
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-
+    .stat .num { font-size: 1.4rem; font-weight: 600; line-height: 1; margin-bottom: 4px; }
     .stat .label { font-size: 0.72rem; color: #888; }
     .stat.accent .num { color: #a78bfa; }
 
@@ -184,12 +163,7 @@
       box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
 
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+    .input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 
     .input-row input {
       flex: 1;
@@ -206,17 +180,12 @@
     .input-row input::placeholder { color: #bbb; }
 
     .add-btn {
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       border-radius: 10px;
       background: #1c1c1e;
-      color: white;
-      border: none;
-      font-size: 1.3rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      color: white; border: none;
+      font-size: 1.3rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
       transition: transform 0.15s, background 0.15s;
     }
@@ -254,17 +223,11 @@
     }
 
     .filters button {
-      flex: 1;
-      border: none;
-      background: none;
-      font-family: inherit;
-      font-size: 0.82rem;
-      color: #999;
-      cursor: pointer;
-      padding: 9px 0;
-      border-radius: 10px;
-      transition: all 0.2s;
-      font-weight: 500;
+      flex: 1; border: none; background: none;
+      font-family: inherit; font-size: 0.82rem;
+      color: #999; cursor: pointer;
+      padding: 9px 0; border-radius: 10px;
+      transition: all 0.2s; font-weight: 500;
     }
 
     .filters button.active { background: #1c1c1e; color: white; }
@@ -292,22 +255,17 @@
 
     .check-wrap input[type="checkbox"] {
       appearance: none;
-      width: 20px;
-      height: 20px;
+      width: 20px; height: 20px;
       border: 2px solid #e5e5e5;
       border-radius: 6px;
       cursor: pointer;
-      display: block;
-      flex-shrink: 0;
+      display: block; flex-shrink: 0;
       margin-top: 1px;
       transition: all 0.15s;
       position: relative;
     }
 
-    .check-wrap input[type="checkbox"]:checked {
-      background: #1c1c1e;
-      border-color: #1c1c1e;
-    }
+    .check-wrap input[type="checkbox"]:checked { background: #1c1c1e; border-color: #1c1c1e; }
 
     .check-wrap input[type="checkbox"]:checked::after {
       content: '';
@@ -322,10 +280,8 @@
     .item-body { flex: 1; min-width: 0; }
 
     .item-text {
-      font-size: 0.92rem;
-      color: #1c1c1e;
-      line-height: 1.5;
-      margin-bottom: 8px;
+      font-size: 0.92rem; color: #1c1c1e;
+      line-height: 1.5; margin-bottom: 8px;
       word-break: break-word;
     }
 
@@ -369,16 +325,12 @@
 
     <!-- 認証画面 -->
     <div class="auth-screen" id="authScreen">
-      <h2 id="authTitle">ログイン</h2>
-      <p id="authSubtitle">メールアドレスとパスワードでログイン</p>
+      <div class="auth-logo">📝</div>
+      <h2>ログイン</h2>
+      <p>メールアドレスを入力すると、ログイン用のリンクをお送りします。パスワード不要です。</p>
       <div class="auth-msg" id="authMsg"></div>
       <input class="auth-input" id="authEmail" type="email" placeholder="メールアドレス" />
-      <input class="auth-input" id="authPassword" type="password" placeholder="パスワード（6文字以上）" />
-      <button class="auth-btn" id="authBtn" onclick="handleAuth()">ログイン</button>
-      <div class="auth-toggle">
-        <span id="toggleText">アカウントをお持ちでないですか？</span>
-        <button onclick="toggleMode()">新規登録</button>
-      </div>
+      <button class="auth-btn" id="authBtn" onclick="sendMagicLink()">リンクを送る</button>
     </div>
 
     <!-- アプリ画面 -->
@@ -446,10 +398,8 @@
 
     let tasks = [];
     let filter = 'all';
-    let isLogin = true;
 
-    // 画面切り替え
-    function showAuth()  {
+    function showAuth() {
       document.getElementById('authScreen').style.display = 'block';
       document.getElementById('appScreen').style.display  = 'none';
     }
@@ -460,42 +410,29 @@
       fetchTasks();
     }
 
-    // 認証モード切り替え
-    function toggleMode() {
-      isLogin = !isLogin;
-      document.getElementById('authTitle').textContent    = isLogin ? 'ログイン' : '新規登録';
-      document.getElementById('authSubtitle').textContent = isLogin ? 'メールアドレスとパスワードでログイン' : 'アカウントを作成します';
-      document.getElementById('authBtn').textContent      = isLogin ? 'ログイン' : '登録する';
-      document.getElementById('toggleText').textContent   = isLogin ? 'アカウントをお持ちでないですか？' : 'すでにアカウントをお持ちですか？';
-      document.querySelector('.auth-toggle button').textContent = isLogin ? '新規登録' : 'ログインへ';
-      document.getElementById('authMsg').className = 'auth-msg';
-    }
-
     function showMsg(text, type) {
       const el = document.getElementById('authMsg');
       el.textContent = text;
       el.className = `auth-msg ${type}`;
     }
 
-    async function handleAuth() {
-      const email    = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value;
-      const btn      = document.getElementById('authBtn');
-      if (!email || !password) return showMsg('メールとパスワードを入力してください', 'error');
+    async function sendMagicLink() {
+      const email = document.getElementById('authEmail').value.trim();
+      if (!email) return showMsg('メールアドレスを入力してください', 'error');
+      const btn = document.getElementById('authBtn');
       btn.disabled = true;
-      btn.textContent = '処理中...';
-
-      if (isLogin) {
-        const { error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) { showMsg('メールまたはパスワードが違います', 'error'); }
+      btn.textContent = '送信中...';
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.href }
+      });
+      if (error) {
+        showMsg('送信に失敗しました。メールアドレスを確認してください', 'error');
       } else {
-        const { error } = await sb.auth.signUp({ email, password });
-        if (error) { showMsg(error.message, 'error'); }
-        else { showMsg('確認メールを送りました。メールを確認してください', 'success'); }
+        showMsg(`✉ ${email} にログインリンクを送りました。メールを確認してクリックしてください。`, 'success');
       }
-
       btn.disabled = false;
-      btn.textContent = isLogin ? 'ログイン' : '登録する';
+      btn.textContent = 'リンクを送る';
     }
 
     async function logout() {
@@ -504,7 +441,6 @@
       showAuth();
     }
 
-    // タスク操作
     async function fetchTasks() {
       const { data } = await sb.from('todos').select('*').order('created_at', { ascending: false });
       tasks = data || [];
@@ -611,24 +547,22 @@
       return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    document.getElementById('authEmail')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendMagicLink();
+    });
+
     document.getElementById('newTask')?.addEventListener('keydown', e => {
       if (e.key === 'Enter') addTask();
     });
 
-    document.getElementById('authPassword')?.addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleAuth();
-    });
-
-    // 日付表示
     const now  = new Date();
     const days = ['日','月','火','水','木','金','土'];
     document.getElementById('dateLabel').innerHTML =
       `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日<br>${days[now.getDay()]}曜日`;
 
-    // セッション確認
     sb.auth.onAuthStateChange((event, session) => {
-      if (session) { showApp(); }
-      else         { showAuth(); }
+      if (session) showApp();
+      else         showAuth();
     });
   </script>
 </body>
