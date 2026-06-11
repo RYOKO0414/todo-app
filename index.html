@@ -16,10 +16,7 @@
       padding: 40px 16px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 480px;
-    }
+    .container { width: 100%; max-width: 560px; }
 
     h1 {
       font-size: 2rem;
@@ -28,15 +25,23 @@
       text-align: center;
     }
 
+    .input-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+
     .input-row {
       display: flex;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
     }
 
-    .input-row input {
+    .input-row input[type="text"] {
       flex: 1;
-      padding: 12px 16px;
+      padding: 11px 14px;
       border: 2px solid #ddd;
       border-radius: 10px;
       font-size: 1rem;
@@ -44,10 +49,10 @@
       transition: border-color 0.2s;
     }
 
-    .input-row input:focus { border-color: #6c63ff; }
+    .input-row input[type="text"]:focus { border-color: #6c63ff; }
 
     .input-row button {
-      padding: 12px 20px;
+      padding: 11px 20px;
       background: #6c63ff;
       color: white;
       border: none;
@@ -59,6 +64,26 @@
     }
 
     .input-row button:hover { background: #574fd6; }
+
+    .meta-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .meta-row select, .meta-row input[type="date"] {
+      flex: 1;
+      padding: 8px 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      background: white;
+      transition: border-color 0.2s;
+    }
+
+    .meta-row select:focus, .meta-row input[type="date"]:focus {
+      border-color: #6c63ff;
+    }
 
     .filters {
       display: flex;
@@ -91,19 +116,27 @@
     }
 
     .todo-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
       background: white;
       padding: 14px 16px;
-      border-radius: 10px;
+      border-radius: 12px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
       animation: fadeIn 0.2s ease;
+      border-left: 5px solid #ddd;
     }
+
+    .todo-item.priority-high   { border-left-color: #e74c3c; }
+    .todo-item.priority-medium { border-left-color: #f39c12; }
+    .todo-item.priority-low    { border-left-color: #2ecc71; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-6px); }
       to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .item-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .todo-item input[type="checkbox"] {
@@ -126,19 +159,41 @@
       color: #aaa;
     }
 
-    .todo-item .delete-btn {
+    .delete-btn {
       background: none;
       border: none;
       cursor: pointer;
       color: #ccc;
       font-size: 1.2rem;
-      line-height: 1;
       padding: 4px;
       transition: color 0.2s;
       flex-shrink: 0;
     }
 
-    .todo-item .delete-btn:hover { color: #e74c3c; }
+    .delete-btn:hover { color: #e74c3c; }
+
+    .item-meta {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      padding-left: 30px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .badge-high   { background: #fde8e8; color: #e74c3c; }
+    .badge-medium { background: #fef3e2; color: #f39c12; }
+    .badge-low    { background: #e8f8f0; color: #2ecc71; }
+
+    .badge-deadline { background: #eef0ff; color: #6c63ff; }
+    .badge-overdue  { background: #fde8e8; color: #e74c3c; }
+    .badge-today    { background: #fff3e0; color: #f39c12; }
 
     .empty {
       text-align: center;
@@ -171,9 +226,19 @@
   <div class="container">
     <h1>📝 To-Do</h1>
 
-    <div class="input-row">
-      <input id="newTask" type="text" placeholder="タスクを入力..." />
-      <button onclick="addTask()">追加</button>
+    <div class="input-card">
+      <div class="input-row">
+        <input id="newTask" type="text" placeholder="タスクを入力..." />
+        <button onclick="addTask()">追加</button>
+      </div>
+      <div class="meta-row">
+        <select id="newPriority">
+          <option value="high">🔴 優先度：高</option>
+          <option value="medium" selected>🟡 優先度：中</option>
+          <option value="low">🟢 優先度：低</option>
+        </select>
+        <input type="date" id="newDeadline" />
+      </div>
     </div>
 
     <div class="filters">
@@ -198,6 +263,24 @@
       localStorage.setItem('tasks', JSON.stringify(tasks));
     }
 
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function deadlineBadge(deadline) {
+      if (!deadline) return '';
+      const t = today();
+      if (deadline < t)   return `<span class="badge badge-overdue">⚠️ 期限切れ：${deadline}</span>`;
+      if (deadline === t) return `<span class="badge badge-today">🔔 今日まで：${deadline}</span>`;
+      return `<span class="badge badge-deadline">📅 ${deadline}</span>`;
+    }
+
+    function priorityBadge(p) {
+      if (p === 'high')   return '<span class="badge badge-high">🔴 高</span>';
+      if (p === 'medium') return '<span class="badge badge-medium">🟡 中</span>';
+      return '<span class="badge badge-low">🟢 低</span>';
+    }
+
     function render() {
       const list = document.getElementById('todoList');
       const filtered = tasks.filter(t =>
@@ -210,10 +293,16 @@
         list.innerHTML = '<div class="empty">タスクがありません</div>';
       } else {
         list.innerHTML = filtered.map(t => `
-          <div class="todo-item ${t.done ? 'done' : ''}" data-id="${t.id}">
-            <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle(${t.id})">
-            <span class="text">${escHtml(t.text)}</span>
-            <button class="delete-btn" onclick="remove(${t.id})">✕</button>
+          <div class="todo-item priority-${t.priority || 'medium'} ${t.done ? 'done' : ''}">
+            <div class="item-top">
+              <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle(${t.id})">
+              <span class="text">${escHtml(t.text)}</span>
+              <button class="delete-btn" onclick="remove(${t.id})">✕</button>
+            </div>
+            <div class="item-meta">
+              ${priorityBadge(t.priority || 'medium')}
+              ${deadlineBadge(t.deadline)}
+            </div>
           </div>
         `).join('');
       }
@@ -227,8 +316,15 @@
       const input = document.getElementById('newTask');
       const text = input.value.trim();
       if (!text) return;
-      tasks.unshift({ id: Date.now(), text, done: false });
+      tasks.unshift({
+        id: Date.now(),
+        text,
+        done: false,
+        priority: document.getElementById('newPriority').value,
+        deadline: document.getElementById('newDeadline').value || null,
+      });
       input.value = '';
+      document.getElementById('newDeadline').value = '';
       save();
       render();
     }
