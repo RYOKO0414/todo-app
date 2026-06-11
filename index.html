@@ -6,6 +6,7 @@
   <title>To-Do</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -20,6 +21,92 @@
     }
 
     .container { width: 100%; max-width: 500px; }
+
+    /* ===== Auth Screen ===== */
+    .auth-screen {
+      background: white;
+      border-radius: 24px;
+      padding: 40px 36px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      margin-top: 40px;
+    }
+
+    .auth-screen h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .auth-screen p {
+      font-size: 0.85rem;
+      color: #999;
+      margin-bottom: 28px;
+    }
+
+    .auth-input {
+      width: 100%;
+      border: 1.5px solid #ececec;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: #1c1c1e;
+      outline: none;
+      margin-bottom: 10px;
+      transition: border-color 0.15s;
+    }
+
+    .auth-input:focus { border-color: #a78bfa; }
+
+    .auth-btn {
+      width: 100%;
+      background: #1c1c1e;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background 0.15s;
+    }
+
+    .auth-btn:hover { background: #3a3a3c; }
+    .auth-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .auth-toggle {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.82rem;
+      color: #999;
+    }
+
+    .auth-toggle button {
+      background: none;
+      border: none;
+      color: #7c3aed;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .auth-msg {
+      font-size: 0.82rem;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .auth-msg.error   { background: #fce7e7; color: #e03131; display: block; }
+    .auth-msg.success { background: #e6f7ee; color: #2f9e44; display: block; }
+
+    /* ===== App ===== */
+    .app-screen { display: none; }
 
     .header {
       background: #1c1c1e;
@@ -42,12 +129,33 @@
       letter-spacing: -0.03em;
     }
 
-    .header-top .date {
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .date {
       font-size: 0.78rem;
       color: #888;
       text-align: right;
       line-height: 1.5;
     }
+
+    .logout-btn {
+      background: #2c2c2e;
+      border: none;
+      color: #aaa;
+      font-family: inherit;
+      font-size: 0.72rem;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .logout-btn:hover { background: #3a3a3c; color: white; }
 
     .stats { display: flex; gap: 12px; }
 
@@ -159,16 +267,9 @@
       font-weight: 500;
     }
 
-    .filters button.active {
-      background: #1c1c1e;
-      color: white;
-    }
+    .filters button.active { background: #1c1c1e; color: white; }
 
-    .todo-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .todo-list { display: flex; flex-direction: column; gap: 8px; }
 
     .todo-item {
       background: white;
@@ -211,13 +312,10 @@
     .check-wrap input[type="checkbox"]:checked::after {
       content: '';
       position: absolute;
-      left: 4px;
-      top: 1px;
-      width: 6px;
-      height: 10px;
+      left: 4px; top: 1px;
+      width: 6px; height: 10px;
       border: 2px solid white;
-      border-top: none;
-      border-left: none;
+      border-top: none; border-left: none;
       transform: rotate(45deg);
     }
 
@@ -231,68 +329,36 @@
       word-break: break-word;
     }
 
-    .todo-item.done .item-text {
-      text-decoration: line-through;
-      color: #c7c7c7;
-    }
+    .todo-item.done .item-text { text-decoration: line-through; color: #c7c7c7; }
 
     .item-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 
-    .tag {
-      font-size: 0.72rem;
-      font-weight: 500;
-      padding: 3px 9px;
-      border-radius: 20px;
-    }
-
-    .tag-high   { background: #fce7e7; color: #e03131; }
-    .tag-medium { background: #fff4e0; color: #e67700; }
-    .tag-low    { background: #e6f7ee; color: #2f9e44; }
+    .tag { font-size: 0.72rem; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+    .tag-high     { background: #fce7e7; color: #e03131; }
+    .tag-medium   { background: #fff4e0; color: #e67700; }
+    .tag-low      { background: #e6f7ee; color: #2f9e44; }
     .tag-deadline { background: #ede9fe; color: #7c3aed; }
     .tag-overdue  { background: #fce7e7; color: #e03131; }
     .tag-today    { background: #fff4e0; color: #e67700; }
 
     .delete-btn {
-      background: none;
-      border: none;
-      color: #e0e0e0;
-      font-size: 0.85rem;
-      cursor: pointer;
-      padding: 3px;
-      transition: color 0.15s;
-      flex-shrink: 0;
+      background: none; border: none;
+      color: #e0e0e0; font-size: 0.85rem;
+      cursor: pointer; padding: 3px;
+      transition: color 0.15s; flex-shrink: 0;
     }
 
     .delete-btn:hover { color: #e03131; }
 
-    .empty {
-      text-align: center;
-      color: #ccc;
-      font-size: 0.85rem;
-      padding: 48px 0;
-    }
+    .empty { text-align: center; color: #ccc; font-size: 0.85rem; padding: 48px 0; }
+    .loading { text-align: center; color: #bbb; font-size: 0.85rem; padding: 48px 0; }
 
-    .loading {
-      text-align: center;
-      color: #bbb;
-      font-size: 0.85rem;
-      padding: 48px 0;
-    }
-
-    .footer {
-      margin-top: 16px;
-      display: flex;
-      justify-content: flex-end;
-    }
+    .footer { margin-top: 16px; display: flex; justify-content: flex-end; }
 
     .footer button {
-      background: none;
-      border: none;
-      font-family: inherit;
-      font-size: 0.78rem;
-      color: #bbb;
-      cursor: pointer;
-      transition: color 0.15s;
+      background: none; border: none;
+      font-family: inherit; font-size: 0.78rem;
+      color: #bbb; cursor: pointer; transition: color 0.15s;
     }
 
     .footer button:hover { color: #e03131; }
@@ -301,91 +367,163 @@
 <body>
   <div class="container">
 
-    <div class="header">
-      <div class="header-top">
-        <h1>タスク</h1>
-        <div class="date" id="dateLabel"></div>
-      </div>
-      <div class="stats">
-        <div class="stat accent">
-          <div class="num" id="statRemaining">—</div>
-          <div class="label">残りタスク</div>
-        </div>
-        <div class="stat">
-          <div class="num" id="statDone">—</div>
-          <div class="label">完了済み</div>
-        </div>
-        <div class="stat">
-          <div class="num" id="statOverdue">—</div>
-          <div class="label">期限切れ</div>
-        </div>
+    <!-- 認証画面 -->
+    <div class="auth-screen" id="authScreen">
+      <h2 id="authTitle">ログイン</h2>
+      <p id="authSubtitle">メールアドレスとパスワードでログイン</p>
+      <div class="auth-msg" id="authMsg"></div>
+      <input class="auth-input" id="authEmail" type="email" placeholder="メールアドレス" />
+      <input class="auth-input" id="authPassword" type="password" placeholder="パスワード（6文字以上）" />
+      <button class="auth-btn" id="authBtn" onclick="handleAuth()">ログイン</button>
+      <div class="auth-toggle">
+        <span id="toggleText">アカウントをお持ちでないですか？</span>
+        <button onclick="toggleMode()">新規登録</button>
       </div>
     </div>
 
-    <div class="input-card">
-      <div class="input-row">
-        <input id="newTask" type="text" placeholder="新しいタスクを追加..." />
-        <button class="add-btn" id="addBtn" onclick="addTask()">＋</button>
+    <!-- アプリ画面 -->
+    <div class="app-screen" id="appScreen">
+      <div class="header">
+        <div class="header-top">
+          <h1>タスク</h1>
+          <div class="header-right">
+            <div class="date" id="dateLabel"></div>
+            <button class="logout-btn" onclick="logout()">ログアウト</button>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat accent">
+            <div class="num" id="statRemaining">—</div>
+            <div class="label">残りタスク</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="statDone">—</div>
+            <div class="label">完了済み</div>
+          </div>
+          <div class="stat">
+            <div class="num" id="statOverdue">—</div>
+            <div class="label">期限切れ</div>
+          </div>
+        </div>
       </div>
-      <div class="meta-row">
-        <select id="newPriority">
-          <option value="high">🔴 優先度：高</option>
-          <option value="medium" selected>🟡 優先度：中</option>
-          <option value="low">🟢 優先度：低</option>
-        </select>
-        <input type="date" id="newDeadline" />
+
+      <div class="input-card">
+        <div class="input-row">
+          <input id="newTask" type="text" placeholder="新しいタスクを追加..." />
+          <button class="add-btn" id="addBtn" onclick="addTask()">＋</button>
+        </div>
+        <div class="meta-row">
+          <select id="newPriority">
+            <option value="high">🔴 優先度：高</option>
+            <option value="medium" selected>🟡 優先度：中</option>
+            <option value="low">🟢 優先度：低</option>
+          </select>
+          <input type="date" id="newDeadline" />
+        </div>
       </div>
-    </div>
 
-    <div class="filters">
-      <button class="active" onclick="setFilter('all', this)">すべて</button>
-      <button onclick="setFilter('active', this)">未完了</button>
-      <button onclick="setFilter('done', this)">完了済み</button>
-    </div>
+      <div class="filters">
+        <button class="active" onclick="setFilter('all', this)">すべて</button>
+        <button onclick="setFilter('active', this)">未完了</button>
+        <button onclick="setFilter('done', this)">完了済み</button>
+      </div>
 
-    <div class="todo-list" id="todoList"><div class="loading">読み込み中...</div></div>
+      <div class="todo-list" id="todoList"><div class="loading">読み込み中...</div></div>
 
-    <div class="footer">
-      <button onclick="clearDone()">完了済みを削除</button>
+      <div class="footer">
+        <button onclick="clearDone()">完了済みを削除</button>
+      </div>
     </div>
 
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://cfbljcqrxdfwdbibyzsn.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmYmxqY3FyeGRmd2RiaWJ5enNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjM0ODYsImV4cCI6MjA5NjY5OTQ4Nn0.lRglflRjxfiFApOPPAhlo3nacElwfQWU6SXtH5JIv00';
-
-    const headers = {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    };
+    const { createClient } = supabase;
+    const sb = createClient(
+      'https://cfbljcqrxdfwdbibyzsn.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmYmxqY3FyeGRmd2RiaWJ5enNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMjM0ODYsImV4cCI6MjA5NjY5OTQ4Nn0.lRglflRjxfiFApOPPAhlo3nacElwfQWU6SXtH5JIv00'
+    );
 
     let tasks = [];
     let filter = 'all';
+    let isLogin = true;
 
+    // 画面切り替え
+    function showAuth()  {
+      document.getElementById('authScreen').style.display = 'block';
+      document.getElementById('appScreen').style.display  = 'none';
+    }
+
+    function showApp() {
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('appScreen').style.display  = 'block';
+      fetchTasks();
+    }
+
+    // 認証モード切り替え
+    function toggleMode() {
+      isLogin = !isLogin;
+      document.getElementById('authTitle').textContent    = isLogin ? 'ログイン' : '新規登録';
+      document.getElementById('authSubtitle').textContent = isLogin ? 'メールアドレスとパスワードでログイン' : 'アカウントを作成します';
+      document.getElementById('authBtn').textContent      = isLogin ? 'ログイン' : '登録する';
+      document.getElementById('toggleText').textContent   = isLogin ? 'アカウントをお持ちでないですか？' : 'すでにアカウントをお持ちですか？';
+      document.querySelector('.auth-toggle button').textContent = isLogin ? '新規登録' : 'ログインへ';
+      document.getElementById('authMsg').className = 'auth-msg';
+    }
+
+    function showMsg(text, type) {
+      const el = document.getElementById('authMsg');
+      el.textContent = text;
+      el.className = `auth-msg ${type}`;
+    }
+
+    async function handleAuth() {
+      const email    = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const btn      = document.getElementById('authBtn');
+      if (!email || !password) return showMsg('メールとパスワードを入力してください', 'error');
+      btn.disabled = true;
+      btn.textContent = '処理中...';
+
+      if (isLogin) {
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) { showMsg('メールまたはパスワードが違います', 'error'); }
+      } else {
+        const { error } = await sb.auth.signUp({ email, password });
+        if (error) { showMsg(error.message, 'error'); }
+        else { showMsg('確認メールを送りました。メールを確認してください', 'success'); }
+      }
+
+      btn.disabled = false;
+      btn.textContent = isLogin ? 'ログイン' : '登録する';
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      tasks = [];
+      showAuth();
+    }
+
+    // タスク操作
     async function fetchTasks() {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/todos?order=created_at.desc`, { headers });
-      tasks = await res.json();
+      const { data } = await sb.from('todos').select('*').order('created_at', { ascending: false });
+      tasks = data || [];
       render();
     }
 
     async function addTask() {
       const input = document.getElementById('newTask');
-      const text = input.value.trim();
+      const text  = input.value.trim();
       if (!text) return;
       const btn = document.getElementById('addBtn');
       btn.disabled = true;
-      const body = JSON.stringify({
+      const { data } = await sb.from('todos').insert({
         text,
         done: false,
         priority: document.getElementById('newPriority').value,
         deadline: document.getElementById('newDeadline').value || null,
-      });
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/todos`, { method: 'POST', headers, body });
-      const [newTask] = await res.json();
-      tasks.unshift(newTask);
+      }).select().single();
+      if (data) tasks.unshift(data);
       input.value = '';
       document.getElementById('newDeadline').value = '';
       btn.disabled = false;
@@ -393,23 +531,20 @@
     }
 
     async function toggle(id, done) {
-      await fetch(`${SUPABASE_URL}/rest/v1/todos?id=eq.${id}`, {
-        method: 'PATCH', headers,
-        body: JSON.stringify({ done: !done })
-      });
+      await sb.from('todos').update({ done: !done }).eq('id', id);
       const t = tasks.find(t => t.id === id);
       if (t) t.done = !done;
       render();
     }
 
     async function remove(id) {
-      await fetch(`${SUPABASE_URL}/rest/v1/todos?id=eq.${id}`, { method: 'DELETE', headers });
+      await sb.from('todos').delete().eq('id', id);
       tasks = tasks.filter(t => t.id !== id);
       render();
     }
 
     async function clearDone() {
-      await fetch(`${SUPABASE_URL}/rest/v1/todos?done=eq.true`, { method: 'DELETE', headers });
+      await sb.from('todos').delete().eq('done', true);
       tasks = tasks.filter(t => !t.done);
       render();
     }
@@ -437,32 +572,29 @@
     }
 
     function render() {
-      const list = document.getElementById('todoList');
+      const list     = document.getElementById('todoList');
       const filtered = tasks.filter(t =>
         filter === 'all' ? true : filter === 'active' ? !t.done : t.done
       );
 
-      if (filtered.length === 0) {
-        list.innerHTML = '<div class="empty">タスクがありません</div>';
-      } else {
-        list.innerHTML = filtered.map(t => `
-          <div class="todo-item ${t.done ? 'done' : ''}">
-            <div class="check-wrap">
-              <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle(${t.id}, ${t.done})">
-            </div>
-            <div class="item-body">
-              <div class="item-text">${escHtml(t.text)}</div>
-              <div class="item-tags">
-                ${priorityTag(t.priority || 'medium')}
-                ${deadlineTag(t.deadline)}
+      list.innerHTML = filtered.length === 0
+        ? '<div class="empty">タスクがありません</div>'
+        : filtered.map(t => `
+            <div class="todo-item ${t.done ? 'done' : ''}">
+              <div class="check-wrap">
+                <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle(${t.id}, ${t.done})">
               </div>
+              <div class="item-body">
+                <div class="item-text">${escHtml(t.text)}</div>
+                <div class="item-tags">
+                  ${priorityTag(t.priority || 'medium')}
+                  ${deadlineTag(t.deadline)}
+                </div>
+              </div>
+              <button class="delete-btn" onclick="remove(${t.id})">✕</button>
             </div>
-            <button class="delete-btn" onclick="remove(${t.id})">✕</button>
-          </div>
-        `).join('');
-      }
+          `).join('');
 
-      const t = todayStr();
       document.getElementById('statRemaining').textContent = tasks.filter(t => !t.done).length;
       document.getElementById('statDone').textContent      = tasks.filter(t => t.done).length;
       document.getElementById('statOverdue').textContent   = tasks.filter(t => !t.done && t.deadline && t.deadline < todayStr()).length;
@@ -479,16 +611,25 @@
       return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    document.getElementById('newTask').addEventListener('keydown', e => {
+    document.getElementById('newTask')?.addEventListener('keydown', e => {
       if (e.key === 'Enter') addTask();
     });
 
-    const now = new Date();
+    document.getElementById('authPassword')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleAuth();
+    });
+
+    // 日付表示
+    const now  = new Date();
     const days = ['日','月','火','水','木','金','土'];
     document.getElementById('dateLabel').innerHTML =
       `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日<br>${days[now.getDay()]}曜日`;
 
-    fetchTasks();
+    // セッション確認
+    sb.auth.onAuthStateChange((event, session) => {
+      if (session) { showApp(); }
+      else         { showAuth(); }
+    });
   </script>
 </body>
 </html>
